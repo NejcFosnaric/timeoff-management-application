@@ -27,9 +27,9 @@ RUN npm ci --only=production
 # Copy application code
 COPY . .
 
-# Create app user and set permissions
-RUN adduser --system --no-create-home app && \
-    chown -R app /app
+# Create app user and ensure proper permissions
+RUN adduser --disabled-password --gecos "" app && \
+    chown -R app:app /app
 
 USER app
 
