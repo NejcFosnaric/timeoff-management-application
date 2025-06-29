@@ -29,7 +29,7 @@ COPY . .
 
 # Create app user and set permissions
 RUN adduser --system --no-create-home app && \
-    chown -R app:app /app
+    chown -R app /app
 
 USER app
 
