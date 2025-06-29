@@ -1,38 +1,36 @@
 # -------------------------------------------------------------------
 # Fixed dockerfile for TimeOff Management with SQLite3 support
 # -------------------------------------------------------------------
-FROM node:16-alpine as dependencies
+FROM alpine:latest as dependencies
 
-# Install Python, and build tools needed for native modules
+# Install Node.js, npm, Python, and build tools needed for SQLite3
 RUN apk add --no-cache \
+    nodejs npm \
     python3 \
-    python2 \
     make \
     g++ \
     sqlite-dev
 
-FROM node:16-alpine
+COPY package.json .
+RUN npm install
+
+FROM alpine:latest
 
 LABEL org.label-schema.schema-version="1.0"
 LABEL org.label-schema.docker.cmd="docker run -d -p 3000:3000 --name alpine_timeoff"
 
-# Install runtime dependencies including Python for native modules
+# Install runtime dependencies including Python for SQLite3
 RUN apk add --no-cache \
+    nodejs npm \
     python3 \
-    python2 \
-    make \
-    g++ \
     sqlite \
-    sqlite-dev \
     vim
 
 RUN adduser --system app --home /app
 USER app
 WORKDIR /app
 COPY . /app
-
-# Install dependencies as the app user
-RUN npm install
+COPY --from=dependencies node_modules ./node_modules
 
 CMD npm start
 
