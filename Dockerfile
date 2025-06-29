@@ -21,11 +21,11 @@ ENV MYSQL_HOST=localhost
 ENV MYSQL_USER=timeoff
 ENV MYSQL_DATABASE=timeoff
 
-# Install dependencies (production mode)
-RUN npm ci --only=production
+# Install dependencies including dev dependencies to get mysql
+RUN npm ci
 
-# Install MySQL driver for Sequelize
-RUN npm install mysql2
+# Install MySQL driver for old Sequelize version
+RUN npm install mysql
 
 # Copy application code
 COPY . .
