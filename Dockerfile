@@ -1,37 +1,38 @@
 # -------------------------------------------------------------------
-# Fixed dockerfile for TimeOff Management with SQLite3 support
+# Simple TimeOff Management Dockerfile for MySQL
 # -------------------------------------------------------------------
-FROM alpine:latest as dependencies
+FROM node:16-alpine
 
-# Install Node.js, npm, Python, and build tools needed for SQLite3
+# Install build dependencies
 RUN apk add --no-cache \
-    nodejs npm \
     python3 \
     make \
     g++ \
-    sqlite-dev
-
-COPY package.json .
-RUN npm install
-
-FROM alpine:latest
-
-LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.docker.cmd="docker run -d -p 3000:3000 --name alpine_timeoff"
-
-# Install runtime dependencies including Python for SQLite3
-RUN apk add --no-cache \
-    nodejs npm \
-    python3 \
-    sqlite \
     vim
 
-RUN adduser --system app --home /app
-USER app
 WORKDIR /app
-COPY . /app
-COPY --from=dependencies node_modules ./node_modules
 
-CMD npm start
+# Copy package files first
+COPY package*.json ./
+
+# Set environment variables before npm install to avoid SQLite3 issues
+ENV NODE_ENV=production
+ENV MYSQL_HOST=localhost
+ENV MYSQL_USER=timeoff
+ENV MYSQL_DATABASE=timeoff
+
+# Install dependencies (production mode)
+RUN npm ci --only=production
+
+# Copy application code
+COPY . .
+
+# Create app user and set permissions
+RUN adduser --system --no-create-home app && \
+    chown -R app:app /app
+
+USER app
 
 EXPOSE 3000
+
+CMD ["npm", "start"]
